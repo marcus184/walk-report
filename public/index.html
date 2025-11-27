@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Walk Report - PDF Builder</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      opacity: 0.9;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .card h2 {
+      color: #333;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-area {
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 15px;
+    }
+
+    .upload-area:hover {
+      border-color: #667eea;
+      background: #f8f9ff;
+    }
+
+    .upload-area.dragover {
+      border-color: #667eea;
+      background: #e8ebff;
+    }
+
+    .upload-area input {
+      display: none;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #d0d0d0;
+    }
+
+    .btn-danger {
+      background: #ff4757;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #ff3344;
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 0.875rem;
+    }
+
+    .file-list {
+      margin-top: 15px;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 15px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .file-icon {
+      font-size: 1.5rem;
+    }
+
+    .file-details h4 {
+      color: #333;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    .file-details p {
+      color: #666;
+      font-size: 0.8rem;
+    }
+
+    .file-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .transcription-text {
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 0 8px 8px 0;
+      color: #2e7d32;
+      font-style: italic;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-done {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .generate-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input[type="text"] {
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+
+    .form-group input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .checkbox-group {
+      display: flex;
+      gap: 20px;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .checkbox-label input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+    }
+
+    .loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: #667eea;
+    }
+
+    .loading.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #e0e0e0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #999;
+    }
+
+    .api-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      margin-left: 10px;
+    }
+
+    .api-status.connected {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .api-status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .status-dot.connected {
+      background: #28a745;
+    }
+
+    .status-dot.disconnected {
+      background: #dc3545;
+    }
+
+    .actions-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      .card {
+        padding: 15px;
+      }
+
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      .file-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .checkbox-group {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚶 Walk Report</h1>
+      <p>Build PDF reports from your Raspberry Pi images and audio recordings</p>
+      <div id="apiStatus" class="api-status disconnected">
+        <span class="status-dot disconnected"></span>
+        <span>Checking...</span>
+      </div>
+    </header>
+
+    <!-- Image Upload Section -->
+    <div class="card">
+      <h2>📷 Images</h2>
+      <div class="upload-area" id="imageUploadArea">
+        <p>📁 Drag & drop images here or click to select</p>
+        <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Supports: JPEG, PNG, GIF, WebP</p>
+        <input type="file" id="imageInput" accept="image/jpeg,image/png,image/gif,image/webp" multiple>
+      </div>
+      <div class="file-list" id="imageList">
+        <div class="empty-state">No images uploaded yet</div>
+      </div>
+    </div>
+
+    <!-- Audio Upload Section -->
+    <div class="card">
+      <h2>🎤 Audio Recordings</h2>
+      <div class="upload-area" id="audioUploadArea">
+        <p>📁 Drag & drop audio files here or click to select</p>
+        <p style="color: #999; font-size: 0.9rem; margin-top: 10px;">Supports: MP3, WAV, M4A, OGG, WebM (max 25MB)</p>
+        <input type="file" id="audioInput" accept="audio/mpeg,audio/wav,audio/mp3,audio/m4a,audio/ogg,audio/webm" multiple>
+      </div>
+      <div class="file-list" id="audioList">
+        <div class="empty-state">No audio files uploaded yet</div>
+      </div>
+    </div>
+
+    <!-- PDF Generation Section -->
+    <div class="card">
+      <h2>📄 Generate PDF Report</h2>
+      <div class="generate-section">
+        <div class="form-group">
+          <label for="reportTitle">Report Title</label>
+          <input type="text" id="reportTitle" placeholder="Enter report title..." value="Walk Report">
+        </div>
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeImages" checked>
+            <span>Include Images</span>
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeTranscriptions" checked>
+            <span>Include Transcriptions</span>
+          </label>
+        </div>
+        <div class="actions-row">
+          <button class="btn btn-primary" id="generateBtn" onclick="generatePDF()">
+            📄 Generate PDF
+          </button>
+          <button class="btn btn-danger" onclick="clearAll()">
+            🗑️ Clear All
+          </button>
+        </div>
+        <div class="loading" id="generateLoading">
+          <div class="spinner"></div>
+          <span>Generating PDF...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '';
+
+    // Check API status on load
+    async function checkApiStatus() {
+      const statusEl = document.getElementById('apiStatus');
+      try {
+        const res = await fetch(`${API_BASE}/api/health`);
+        const data = await res.json();
+        
+        if (data.openaiConfigured) {
+          statusEl.className = 'api-status connected';
+          statusEl.innerHTML = '<span class="status-dot connected"></span><span>OpenAI Connected</span>';
+        } else {
+          statusEl.className = 'api-status disconnected';
+          statusEl.innerHTML = '<span class="status-dot disconnected"></span><span>OpenAI Not Configured</span>';
+        }
+      } catch (err) {
+        statusEl.className = 'api-status disconnected';
+        statusEl.innerHTML = '<span class="status-dot disconnected"></span><span>Server Offline</span>';
+      }
+    }
+
+    // Setup drag and drop
+    function setupDragDrop(areaId, inputId, uploadFn) {
+      const area = document.getElementById(areaId);
+      const input = document.getElementById(inputId);
+
+      area.addEventListener('click', () => input.click());
+      
+      area.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        area.classList.add('dragover');
+      });
+
+      area.addEventListener('dragleave', () => {
+        area.classList.remove('dragover');
+      });
+
+      area.addEventListener('drop', (e) => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        uploadFn(e.dataTransfer.files);
+      });
+
+      input.addEventListener('change', (e) => {
+        uploadFn(e.target.files);
+        input.value = '';
+      });
+    }
+
+    // Upload images
+    async function uploadImages(files) {
+      const formData = new FormData();
+      for (const file of files) {
+        formData.append('images', file);
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/upload/images`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+        } else {
+          refreshFiles();
+        }
+      } catch (err) {
+        alert('Failed to upload images');
+        console.error(err);
+      }
+    }
+
+    // Upload audio
+    async function uploadAudio(files) {
+      const formData = new FormData();
+      for (const file of files) {
+        formData.append('audio', file);
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/api/upload/audio`, {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+        } else {
+          refreshFiles();
+        }
+      } catch (err) {
+        alert('Failed to upload audio files');
+        console.error(err);
+      }
+    }
+
+    // Transcribe audio
+    async function transcribeAudio(audioId, btnElement) {
+      btnElement.disabled = true;
+      btnElement.textContent = 'Transcribing...';
+
+      try {
+        const res = await fetch(`${API_BASE}/api/transcribe/${audioId}`, {
+          method: 'POST',
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+          btnElement.disabled = false;
+          btnElement.textContent = '🎯 Transcribe';
+        } else {
+          refreshFiles();
+        }
+      } catch (err) {
+        alert('Failed to transcribe audio');
+        btnElement.disabled = false;
+        btnElement.textContent = '🎯 Transcribe';
+        console.error(err);
+      }
+    }
+
+    // Delete file
+    async function deleteFile(type, id) {
+      if (!confirm('Are you sure you want to delete this file?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/files/${type}/${id}`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+        } else {
+          refreshFiles();
+        }
+      } catch (err) {
+        alert('Failed to delete file');
+        console.error(err);
+      }
+    }
+
+    // Clear all files
+    async function clearAll() {
+      if (!confirm('Are you sure you want to delete all files?')) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/files`, {
+          method: 'DELETE',
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(data.error);
+        } else {
+          refreshFiles();
+        }
+      } catch (err) {
+        alert('Failed to clear files');
+        console.error(err);
+      }
+    }
+
+    // Generate PDF
+    async function generatePDF() {
+      const title = document.getElementById('reportTitle').value || 'Walk Report';
+      const includeImages = document.getElementById('includeImages').checked;
+      const includeTranscriptions = document.getElementById('includeTranscriptions').checked;
+      
+      const loading = document.getElementById('generateLoading');
+      const btn = document.getElementById('generateBtn');
+      
+      loading.classList.add('active');
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/generate-pdf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, includeImages, includeTranscriptions }),
+        });
+
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to generate PDF');
+        }
+
+        // Download the PDF
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(err.message);
+        console.error(err);
+      } finally {
+        loading.classList.remove('active');
+        btn.disabled = false;
+      }
+    }
+
+    // Refresh file lists
+    async function refreshFiles() {
+      try {
+        const res = await fetch(`${API_BASE}/api/files`);
+        const data = await res.json();
+        renderImageList(data.images);
+        renderAudioList(data.audio);
+      } catch (err) {
+        console.error('Failed to refresh files:', err);
+      }
+    }
+
+    // Render image list
+    function renderImageList(images) {
+      const list = document.getElementById('imageList');
+      
+      if (images.length === 0) {
+        list.innerHTML = '<div class="empty-state">No images uploaded yet</div>';
+        return;
+      }
+
+      list.innerHTML = images.map(img => `
+        <div class="file-item">
+          <div class="file-info">
+            <span class="file-icon">🖼️</span>
+            <div class="file-details">
+              <h4>${escapeHtml(img.originalname)}</h4>
+              <p>${formatSize(img.size)}</p>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button class="btn btn-danger btn-small" onclick="deleteFile('images', '${img.id}')">🗑️ Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render audio list
+    function renderAudioList(audioFiles) {
+      const list = document.getElementById('audioList');
+      
+      if (audioFiles.length === 0) {
+        list.innerHTML = '<div class="empty-state">No audio files uploaded yet</div>';
+        return;
+      }
+
+      list.innerHTML = audioFiles.map(audio => `
+        <div class="file-item" style="flex-direction: column; align-items: stretch;">
+          <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+            <div class="file-info">
+              <span class="file-icon">🎵</span>
+              <div class="file-details">
+                <h4>${escapeHtml(audio.originalname)}</h4>
+                <p>${formatSize(audio.size)}</p>
+              </div>
+            </div>
+            <div class="file-actions">
+              ${audio.transcription 
+                ? '<span class="status-badge status-done">✓ Transcribed</span>'
+                : `<button class="btn btn-secondary btn-small" onclick="transcribeAudio('${audio.id}', this)">🎯 Transcribe</button>`
+              }
+              <button class="btn btn-danger btn-small" onclick="deleteFile('audio', '${audio.id}')">🗑️ Delete</button>
+            </div>
+          </div>
+          ${audio.transcription ? `<div class="transcription-text">"${escapeHtml(audio.transcription)}"</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // Utility functions
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      setupDragDrop('imageUploadArea', 'imageInput', uploadImages);
+      setupDragDrop('audioUploadArea', 'audioInput', uploadAudio);
+      checkApiStatus();
+      refreshFiles();
+    });
+  </script>
+</body>
+</html>
