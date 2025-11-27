@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Walk Report - File Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📁 Walk Report File Manager</h1>
+            <p>Manage files from Raspberry Pi and create PDFs</p>
+        </header>
+
+        <div class="main-content">
+            <!-- File Browser Section -->
+            <section class="file-browser">
+                <div class="section-header">
+                    <h2>Files from Raspberry Pi</h2>
+                    <div class="file-actions">
+                        <input type="file" id="fileInput" multiple style="display: none;" accept="image/*,application/pdf,.txt,.doc,.docx">
+                        <button id="uploadBtn" class="btn btn-primary">📤 Upload Files</button>
+                        <button id="refreshBtn" class="btn btn-secondary">🔄 Refresh</button>
+                    </div>
+                </div>
+                <div id="fileList" class="file-list">
+                    <div class="loading">Loading files...</div>
+                </div>
+            </section>
+
+            <!-- PDF Builder Section -->
+            <section class="pdf-builder">
+                <div class="section-header">
+                    <h2>PDF Builder</h2>
+                    <div class="pdf-actions">
+                        <button id="clearBtn" class="btn btn-secondary">Clear</button>
+                        <button id="generatePdfBtn" class="btn btn-primary">Generate PDF</button>
+                    </div>
+                </div>
+                <div id="dropZone" class="drop-zone">
+                    <div class="drop-zone-content">
+                        <p>📄 Drag and drop images here to add to PDF</p>
+                        <p class="hint">Or click on images in the file browser</p>
+                    </div>
+                    <div id="selectedImages" class="selected-images"></div>
+                </div>
+            </section>
+        </div>
+
+        <!-- PDFs Folder Section -->
+        <section class="pdfs-folder">
+            <div class="section-header">
+                <h2>Created PDFs</h2>
+                <button id="refreshPdfsBtn" class="btn btn-secondary">🔄 Refresh</button>
+            </div>
+            <div id="pdfList" class="pdf-list">
+                <div class="loading">Loading PDFs...</div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
+
