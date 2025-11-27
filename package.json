@@ -1,0 +1,33 @@
+{
+  "name": "walk-report",
+  "version": "1.0.0",
+  "description": "Web app to build PDF reports from Raspberry Pi images and audio files using OpenAI Whisper",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "jest --passWithNoTests"
+  },
+  "keywords": [
+    "pdf",
+    "raspberry-pi",
+    "whisper",
+    "openai",
+    "transcription",
+    "walk-report"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "openai": "^6.9.1",
+    "pdfkit": "^0.17.2"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
