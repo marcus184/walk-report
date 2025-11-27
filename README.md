@@ -17,30 +17,6 @@ A web application to manage files from Raspberry Pi Zero 2 and create PDFs by dr
 - Node.js (v14 or higher)
 - npm or yarn
 
-### Installation
-
-1. Install dependencies:
-```bash
-npm install
-```
-
-2. Start the server:
-```bash
-npm start
-```
-
-For development with auto-reload:
-```bash
-npm run dev
-```
-
-3. Open your browser and navigate to:
-```
-http://localhost:3000
-```
-
-## Usage
-
 ### Uploading Files from Raspberry Pi
 
 You can upload files from your Raspberry Pi using curl or any HTTP client:
