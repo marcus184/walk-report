@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const OpenAI = require('openai');
 const PDFDocument = require('pdfkit');
 
@@ -27,10 +28,30 @@ function getOpenAI() {
   return openai;
 }
 
+// Rate limiters
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: { error: 'Too many requests, please try again later.' },
+});
+
+const uploadLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 upload requests per windowMs
+  message: { error: 'Too many upload requests, please try again later.' },
+});
+
+const transcribeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20, // limit each IP to 20 transcription requests per windowMs
+  message: { error: 'Too many transcription requests, please try again later.' },
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+app.use(generalLimiter);
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -76,7 +97,7 @@ const uploadedFiles = {
 // API Routes
 
 // Upload images
-app.post('/api/upload/images', upload.array('images', 10), (req, res) => {
+app.post('/api/upload/images', uploadLimiter, upload.array('images', 10), (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'No images uploaded' });
   }
@@ -99,7 +120,7 @@ app.post('/api/upload/images', upload.array('images', 10), (req, res) => {
 });
 
 // Upload audio files
-app.post('/api/upload/audio', upload.array('audio', 10), (req, res) => {
+app.post('/api/upload/audio', uploadLimiter, upload.array('audio', 10), (req, res) => {
   if (!req.files || req.files.length === 0) {
     return res.status(400).json({ error: 'No audio files uploaded' });
   }
@@ -123,7 +144,7 @@ app.post('/api/upload/audio', upload.array('audio', 10), (req, res) => {
 });
 
 // Transcribe audio using OpenAI Whisper
-app.post('/api/transcribe/:audioId', async (req, res) => {
+app.post('/api/transcribe/:audioId', transcribeLimiter, async (req, res) => {
   const { audioId } = req.params;
 
   const audioFile = uploadedFiles.audio.find((a) => a.id === audioId);
@@ -169,7 +190,7 @@ app.get('/api/files', (req, res) => {
 });
 
 // Generate PDF with images and transcriptions
-app.post('/api/generate-pdf', async (req, res) => {
+app.post('/api/generate-pdf', uploadLimiter, async (req, res) => {
   const { title = 'Walk Report', includeImages = true, includeTranscriptions = true } = req.body;
 
   if (uploadedFiles.images.length === 0 && uploadedFiles.transcriptions.length === 0) {
@@ -256,7 +277,7 @@ app.post('/api/generate-pdf', async (req, res) => {
 });
 
 // Delete uploaded file
-app.delete('/api/files/:type/:id', (req, res) => {
+app.delete('/api/files/:type/:id', uploadLimiter, (req, res) => {
   const { type, id } = req.params;
 
   if (type !== 'images' && type !== 'audio') {
