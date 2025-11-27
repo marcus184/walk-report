@@ -4,11 +4,17 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const crypto = require('crypto');
 const OpenAI = require('openai');
 const PDFDocument = require('pdfkit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Generate a unique ID using crypto
+function generateId() {
+  return crypto.randomUUID();
+}
 
 // Initialize OpenAI client lazily
 let openai = null;
@@ -76,7 +82,7 @@ app.post('/api/upload/images', upload.array('images', 10), (req, res) => {
   }
 
   const uploaded = req.files.map((file) => ({
-    id: Date.now() + Math.random().toString(36).substr(2, 9),
+    id: generateId(),
     filename: file.filename,
     originalname: file.originalname,
     path: file.path,
@@ -99,7 +105,7 @@ app.post('/api/upload/audio', upload.array('audio', 10), (req, res) => {
   }
 
   const uploaded = req.files.map((file) => ({
-    id: Date.now() + Math.random().toString(36).substr(2, 9),
+    id: generateId(),
     filename: file.filename,
     originalname: file.originalname,
     path: file.path,
@@ -236,7 +242,11 @@ app.post('/api/generate-pdf', async (req, res) => {
           console.error('Download error:', err);
         }
         // Clean up the generated PDF after download
-        fs.unlink(pdfPath, () => {});
+        fs.unlink(pdfPath, (unlinkErr) => {
+          if (unlinkErr) {
+            console.error('Failed to cleanup PDF file:', unlinkErr);
+          }
+        });
       });
     });
   } catch (error) {
