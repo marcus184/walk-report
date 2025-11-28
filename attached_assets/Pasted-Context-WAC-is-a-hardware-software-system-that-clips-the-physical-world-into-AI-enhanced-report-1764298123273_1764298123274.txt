@@ -1,0 +1,273 @@
+Context
+
+WAC is a hardware + software system that “clips” the physical world into AI-enhanced reports. The goal is to cut down administrative time while massively increasing observability, progress tracking, and documentation quality.
+
+The current app (screenshot provided) has three main zones:
+
+Walk Data (left): a file browser of images (thumbnails + filename + size + date).
+
+PDF Builder (right): a big drop zone where users drag images to add to a PDF, with buttons to clear and generate the PDF.
+
+Created PDFs (bottom): list of already generated PDFs.
+
+Functionality must stay the same or get better, but the UI/UX should be completely re-imagined.
+
+Overall design direction
+
+Make it feel like a MAC / Palantir-style operations console: minimal, high signal, “matte tactical” rather than playful.
+
+Dark theme using zinc / matte black surfaces with vibrant yellow-orange accents.
+
+Treat this like a serious tool that might be used by field engineers, safety teams, and operations leaders.
+
+The app should feel immersive (full-bleed layout, good use of space, clear hierarchy) and intuitive (obvious affordances, no clutter).
+
+Use this technology stack:
+
+React + TypeScript
+
+Tailwind CSS for styling
+
+Modern, composable component structure
+
+Color, typography, and visual language
+
+Implement a small design system:
+
+Backgrounds
+
+App shell: very dark zinc/black (e.g., #020617 / #050816).
+
+Cards/panels: slightly lighter zinc (e.g., #0b1120, #111827).
+
+Accents
+
+Primary accent: yellow-orange (something like #fbbf24 or #facc15) for primary buttons, key metrics, and focus states.
+
+Secondary accent: desaturated orange (#f97316) for warnings or “live” states.
+
+Text
+
+High-contrast off-white for primary text, muted slate/gray for secondary text.
+
+Use a modern, slightly condensed sans-serif (e.g., Inter/Space Grotesk if available) with tight line heights for a “console” feel.
+
+Effects & motion
+
+Subtle glows around primary accents (very soft, low opacity).
+
+Very soft, broad shadows on cards (no heavy drop shadows).
+
+Micro-interactions on hover: light scale (+1–2%), border/outline accent, or slight background shift.
+
+Layout & information architecture
+
+Design a three-zone layout with a persistent top bar:
+
+Top bar (global shell)
+
+Left: WAC logo + “Walk Console” or “Walk Report” title + short one-line subheading (“Clip your physical world into AI-ready reports”).
+
+Center/right:
+
+Environment/status pill (e.g., “Connected to WAC-01 • Live”).
+
+User avatar / settings.
+
+A compact, global Command/AI input (“Ask WAC to summarize this walk…”) that we can wire later.
+
+Main content split (2-column layout on desktop)
+
+Left column: “Walk Data” / asset explorer
+
+Right column: “Report Builder” / PDF builder
+
+On smaller screens, stack these with the builder prioritized.
+
+Bottom section: “Created Reports”
+
+Full-width strip at the bottom with a slim card list of previously generated PDFs.
+
+Use responsive design and fluid widths so this feels good from 1280px up to ultrawide.
+
+Left column: Walk Data (world-class asset explorer)
+
+Transform the current basic file grid into a rich asset explorer:
+
+At the top of the left column, add:
+
+Section title: “Walk Data” with a small “WAC Feed” label.
+
+Small text showing count and last sync time, e.g., “24 images • Synced 2 min ago.”
+
+Actions row:
+
+Upload button (accent style)
+
+Import from WAC Device ghost button
+
+Filters icon button
+
+Below, add a tool bar:
+
+Search field (“Filter by tag, filename, or note”)
+
+Quick filter chips: “All”, “Flagged”, “AI tagged hazards”, “Recently added”.
+
+A view toggle (grid vs list).
+
+Thumbnails/cards:
+
+Use a tight grid of cards with:
+
+Large thumbnail.
+
+A small tag strip at the top-left that can show semantics like Hazard, Equipment, Location.
+
+Metadata row: time since captured, file size, optional AI note icon.
+
+On hover:
+
+Slight scale up, highlight border with yellow-orange accent.
+
+Show quick actions: Add to Builder, Preview, Tag.
+
+Add an image preview side panel:
+
+When a user clicks an image, open a right-side or modal preview with:
+
+Large image, zoom controls.
+
+Editable title/notes.
+
+AI summary placeholder (“WAC insight: …”).
+
+Button: “Send to PDF Builder” (primary accent).
+
+This makes the Walk Data side feel like a mission feed, not just a static file list.
+
+Right column: PDF / Report Builder (immersive canvas)
+
+Replace the basic dropzone with a structured builder that feels like a control surface:
+
+Section header:
+
+Title: “Report Builder”.
+
+Subtext: “Drag images from Walk Data or click to add. Arrange, annotate, and generate a WAC report.”
+
+Right-aligned controls:
+
+Clear Builder ghost button.
+
+Generate Report primary button (accent background, rounded, with subtle glow).
+
+Builder surface:
+
+Create a large central card with a dashed border and subtle animated border glow to indicate drop area.
+
+Inside, show:
+
+Empty state illustration: abstract lines/frames (no cheesy stock art) and copy like “Drop images here to start composing your report.”
+
+Once there are items, switch to a reorderable list or grid of “report pages”:
+
+Each page card shows the thumbnail + page number and a tiny “Add note” affordance.
+
+Users can drag to reorder.
+
+Each card has quick actions: “Annotate”, “Remove”.
+
+Right-side mini panel (if space allows) for Report meta:
+
+Fields for: Report title, location, date/time, crew names.
+
+Dropdowns for template type (e.g., “Standard Walk”, “Punchlist”, “Safety Audit”).
+
+A summary chip area reserved for AI later: “WAC will generate a summary based on the selected images.”
+
+States:
+
+When generating, show a progress bar at the top of the builder card (“Compiling WAC Report… 72%”).
+
+Use subtle motion: shimmering progress bar, rotating subtle icon.
+
+Bottom section: Created PDFs / Reports
+
+Upgrade the “Created PDFs” area into a history strip:
+
+Section header: “Created Reports”.
+
+Show a horizontal scroll row of compact cards, each with:
+
+Report title.
+
+Timestamp.
+
+Count of included images.
+
+Status badge (e.g., “Generated”, “Shared”, “Reopened”).
+
+Action icons: Download, Open, Share.
+
+Optionally show a small WAC icon indicating which physical device the report came from.
+
+UX details and interaction polish
+
+Implement these interaction patterns:
+
+Drag and drop from the Walk Data grid into the Builder, with visual feedback:
+
+Dropped items briefly glow in accent color.
+
+A small toast confirming “Added 3 images to Report Builder”.
+
+Keyboard shortcuts (wire basic ones):
+
+Cmd/Ctrl + A: select all visible images in Walk Data.
+
+Cmd/Ctrl + Enter: generate report when in builder.
+
+Esc: close image preview.
+
+Empty & loading states:
+
+For Walk Data: show copy like “No images yet. Connect a WAC device or upload files to begin.”
+
+For Created Reports: “You haven’t generated any reports yet. Build your first WAC report to see it here.”
+
+Responsiveness:
+
+On tablet/small screens, stack columns:
+
+First: Walk Data
+
+Second: Report Builder
+
+Ensure drag-and-drop still works or provide explicit “Add to Builder” buttons.
+
+Implementation instructions
+
+Refactor the existing code into clear, reusable components such as:
+
+AppShell (top bar + layout)
+
+WalkDataPanel
+
+AssetGrid / AssetCard
+
+ReportBuilderPanel
+
+ReportPageCard
+
+CreatedReportsStrip
+
+ImagePreviewModal
+
+Use Tailwind utility classes to implement the color system, spacing, and typography described above.
+
+Preserve and wire existing functionality (uploading images, listing images, building a PDF, clearing, generating, listing created PDFs), but wrap it in this new design.
+
+The final result should feel like a high-end operations console for field intelligence, not a basic file uploader. Optimize for clarity, speed of use, and a sense that the user is operating a powerful system that turns raw field imagery into structured, AI-ready reports.
+
+Build this entire redesigned UI in React + TypeScript + Tailwind, replacing the current UI while keeping the existing app logic intact.
