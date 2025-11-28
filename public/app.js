@@ -31,7 +31,7 @@ function renderFiles() {
     const fileList = document.getElementById('fileList');
     
     if (files.length === 0) {
-        fileList.innerHTML = '<div class="loading">No files found. Upload files from Raspberry Pi.</div>';
+        fileList.innerHTML = '<div class="loading">No files found. Upload walk data to get started.</div>';
         return;
     }
     
