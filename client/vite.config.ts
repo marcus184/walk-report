@@ -2,10 +2,8 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
 
-// Get backend URL from environment or use default
-// For Replit: API_URL is set to localhost:5001 via env var
-// For local Mac: Default to localhost:5002 (backend default port)
-const backendUrl = process.env.API_URL || process.env.VITE_API_URL || 'http://localhost:5002';
+// Backend runs on port 5001
+const backendUrl = 'http://localhost:5001';
 
 export default defineConfig({
   plugins: [react()],

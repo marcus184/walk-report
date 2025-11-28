@@ -34,15 +34,21 @@ localPort = 3001
 
 [[ports]]
 localPort = 5000
+externalPort = 80
 
 [[ports]]
-localPort = 5002
+localPort = 5001
+externalPort = 3000
 
 [[ports]]
 localPort = 32897
 
 [[ports]]
 localPort = 35535
+
+[[ports]]
+localPort = 38365
+externalPort = 3001
 
 [[ports]]
 localPort = 45339
@@ -54,5 +60,3 @@ run = ["npm", "start"]
 [userenv]
 
 [userenv.shared]
-PORT = "5001"
-API_URL = "http://localhost:5001"
