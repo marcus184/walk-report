@@ -3,24 +3,36 @@
 ## Overview
 WAC (Wearable Augmented Capture) is a professional operations console for managing walk data and creating field intelligence reports. The application features a modern dark-themed tactical console aesthetic inspired by Palantir/MAC-style interfaces with a zinc/matte black color palette and amber-orange accents.
 
-**Current State**: Fully functional with React frontend
+**Current State**: Fully functional with React frontend + mobile optimization
 **Last Updated**: November 28, 2025
 
 ## Project Architecture
 
 ### Technology Stack
-- **Backend**: Node.js with Express (port 3001)
+- **Backend**: Node.js with Express (port 5001)
 - **Frontend**: React + TypeScript + Vite (port 5000)
 - **Styling**: Tailwind CSS v3 with custom design system
 - **File Upload**: Multer middleware
 - **PDF Generation**: jsPDF library (client-side)
 - **Icons**: Lucide React
 
+### Port Configuration
+| Port | Server | Purpose |
+|------|--------|---------|
+| 5000 | Vite (React frontend) | User-facing web interface, proxies API requests |
+| 5001 | Express (Node.js backend) | REST API for uploads, files, and PDFs |
+
+**How it works:**
+- Users access the app via port 5000 (the Vite dev server)
+- Vite automatically proxies `/api/*`, `/uploads/*`, and `/pdfs/*` requests to port 5001
+- WAC devices can upload directly to port 5001 or use the proxied endpoint
+
 ### Directory Structure
 ```
 walk-report/
-├── server.js              # Express API server (port 3001)
+├── server.js              # Express API server (port 5001)
 ├── package.json           # Root Node.js dependencies
+├── upload-example.py      # Python script for WAC device uploads
 ├── client/                # React frontend application
 │   ├── src/
 │   │   ├── components/    # React components
@@ -29,7 +41,8 @@ walk-report/
 │   │   │   ├── WalkDataPanel.tsx
 │   │   │   ├── ReportBuilderPanel.tsx
 │   │   │   ├── CreatedReportsStrip.tsx
-│   │   │   └── ImagePreviewModal.tsx
+│   │   │   ├── ImagePreviewModal.tsx
+│   │   │   └── MobileNav.tsx
 │   │   ├── lib/
 │   │   │   └── api.ts     # API client functions
 │   │   ├── types/
@@ -39,12 +52,11 @@ walk-report/
 │   │   └── index.css      # Global styles with Tailwind
 │   ├── public/
 │   │   └── wac-logo.png   # WAC brand logo
-│   ├── vite.config.ts     # Vite configuration with API proxy
+│   ├── vite.config.ts     # Vite configuration with API proxy to port 5001
 │   ├── tailwind.config.js # Tailwind theme configuration
 │   └── package.json       # Frontend dependencies
 ├── uploads/               # Uploaded image files (auto-created)
-├── pdfs/                  # Generated PDF files (auto-created)
-└── upload-example.py      # Python script for device uploads
+└── pdfs/                  # Generated PDF files (auto-created)
 ```
 
 ### Design System
@@ -58,22 +70,58 @@ walk-report/
 
 ### Key Features
 1. **Walk Data Panel**: Browse uploaded images with grid/list view, search, and filter chips
-2. **Report Builder**: Drag-and-drop images to compose reports with metadata fields
-3. **Created Reports Strip**: Horizontal scrolling list of generated PDF reports
+2. **Report Builder**: Drag-and-drop (desktop) or tap-to-add (mobile) images to compose reports
+3. **Created Reports Strip**: Scrolling list of generated PDF reports
 4. **Image Preview Modal**: Full-size image view with notes and AI insight placeholder
 5. **PDF Generation**: Client-side PDF creation with jsPDF
-6. **File Upload**: Direct upload or import from WAC devices
+6. **File Upload**: Direct upload via web UI or from WAC devices
+7. **Mobile Optimization**: Tab-based navigation, touch-friendly controls for screens < 768px
 
 ### API Endpoints
-- `POST /api/upload` - Upload files from devices or web UI
-- `GET /api/files` - Get list of all uploaded files
-- `DELETE /api/files/:filename` - Delete a file
-- `POST /api/pdf/save` - Save generated PDF to server
-- `GET /api/pdfs` - Get list of all created PDFs
-- `GET /uploads/:filename` - Access uploaded files
-- `GET /pdfs/:filename` - Access generated PDFs
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/upload` | Upload image files from devices or web UI |
+| GET | `/api/files` | Get list of all uploaded files with metadata |
+| DELETE | `/api/files/:filename` | Delete a specific file |
+| POST | `/api/pdf/save` | Save generated PDF to server |
+| GET | `/api/pdfs` | Get list of all created PDFs |
+| GET | `/uploads/:filename` | Access uploaded image files |
+| GET | `/pdfs/:filename` | Access generated PDF files |
+
+## WAC Device Upload
+
+### Using curl (Command Line)
+```bash
+# Upload single file
+curl -X POST -F "file=@/path/to/image.jpg" https://YOUR-REPL-URL/api/upload
+
+# Example with local development
+curl -X POST -F "file=@./capture.jpg" http://localhost:5001/api/upload
+```
+
+### Using Python Script
+```bash
+# Upload single file
+python3 upload-example.py /home/pi/image.jpg https://YOUR-REPL-URL
+
+# Upload all images in a directory
+python3 upload-example.py /home/pi/captures/ https://YOUR-REPL-URL
+
+# Local development
+python3 upload-example.py ./image.jpg http://localhost:5001
+```
+
+### Supported Image Formats
+JPG, JPEG, PNG, GIF, BMP, WEBP (max 50MB per file)
 
 ## Recent Changes
+
+### November 28, 2025 - Mobile Optimization
+- Added MobileNav component with bottom tab navigation
+- Responsive layout: side-by-side panels on desktop, tabs on mobile
+- Touch-friendly 44px+ tap targets
+- Collapsible form sections on mobile
+- Tap-to-add workflow replacing drag-and-drop on mobile
 
 ### November 28, 2025 - WAC Console Redesign
 - Complete UI overhaul with React + TypeScript + Tailwind CSS
@@ -82,20 +130,21 @@ walk-report/
 - Implemented drag-and-drop from Walk Data to Report Builder
 - Created responsive layout with Walk Data, Report Builder, and Reports Strip
 - Added image preview modal with notes and AI placeholder
-- Configured dual-server architecture (Express on 3001, Vite on 5000)
+- Configured dual-server architecture (Express on 5001, Vite on 5000)
 
 ## Configuration
 
 ### Environment Variables
-- `PORT`: Backend server port (default: 3001)
+- `PORT`: Backend server port (default: 5001)
+- `VITE_PORT`: Frontend server port (default: 5000)
 
 ### File Limits
 - Max upload file size: 50MB for images
 - Max PDF file size: 100MB
 
 ### Storage
-- Uploads directory: `./uploads` (auto-created)
-- PDFs directory: `./pdfs` (auto-created)
+- Uploads directory: `./uploads` (auto-created on server start)
+- PDFs directory: `./pdfs` (auto-created on server start)
 
 ## Development
 
@@ -105,12 +154,13 @@ The workflow runs both servers:
 node server.js & cd client && npm run dev
 ```
 
-### WAC Device Integration
-Upload files from devices using curl:
+### Troubleshooting
+If you see "EADDRINUSE" errors, kill existing processes:
 ```bash
-curl -X POST -F "file=@/path/to/image.jpg" http://YOUR_REPL_URL/api/upload
+pkill -f "node server.js"; pkill -f "vite"
 ```
 
 ## User Preferences
 - Accent color: Amber-orange (#f59e0b) - vibrant but not too orange
 - Dark theme with professional tactical console aesthetic
+- Backend port: 5001
