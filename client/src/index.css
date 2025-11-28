@@ -49,18 +49,21 @@
   .btn-primary {
     @apply bg-wac-accent text-wac-bg font-semibold px-4 py-2 rounded-lg 
            hover:bg-wac-accentHover transition-all duration-200
-           shadow-glow-sm hover:shadow-glow;
+           shadow-glow-sm hover:shadow-glow
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-wac-accent;
   }
   
   .btn-ghost {
     @apply bg-transparent text-wac-textMuted border border-wac-border 
            px-4 py-2 rounded-lg hover:border-wac-accent hover:text-wac-accent
-           transition-all duration-200;
+           transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-icon {
     @apply p-2 rounded-lg text-wac-textMuted hover:text-wac-accent 
-           hover:bg-wac-surface transition-all duration-200;
+           hover:bg-wac-surface transition-all duration-200
+           disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .card {
@@ -72,5 +75,24 @@
            text-wac-text placeholder:text-wac-textDim
            focus:outline-none focus:border-wac-accent focus:ring-1 focus:ring-wac-accent/30
            transition-all duration-200;
+  }
+
+  .safe-area-pb {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}
+
+@layer utilities {
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

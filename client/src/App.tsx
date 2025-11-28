@@ -5,6 +5,7 @@ import { WalkDataPanel } from './components/WalkDataPanel';
 import { ReportBuilderPanel } from './components/ReportBuilderPanel';
 import { CreatedReportsStrip } from './components/CreatedReportsStrip';
 import { ImagePreviewModal } from './components/ImagePreviewModal';
+import { MobileNav, type MobileTab } from './components/MobileNav';
 import type { WalkFile, PDFFile, ReportPage } from './types';
 import { fetchFiles, fetchPDFs, uploadFile, savePDF } from './lib/api';
 
@@ -18,6 +19,7 @@ function App() {
   const [isLoadingPdfs, setIsLoadingPdfs] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateProgress, setGenerateProgress] = useState(0);
+  const [mobileTab, setMobileTab] = useState<MobileTab>('data');
 
   const loadFiles = useCallback(async () => {
     setIsLoadingFiles(true);
@@ -184,6 +186,7 @@ function App() {
       await loadPdfs();
       
       setReportPages([]);
+      setMobileTab('reports');
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
@@ -194,8 +197,8 @@ function App() {
 
   return (
     <AppShell>
-      <div className="h-full flex flex-col">
-        <div className="flex-1 flex overflow-hidden">
+      <div className="h-full flex flex-col pb-16 md:pb-0">
+        <div className="hidden md:flex flex-1 overflow-hidden">
           <div className="w-1/2 lg:w-2/5 xl:w-1/3 flex-shrink-0">
             <WalkDataPanel
               files={files}
@@ -223,17 +226,71 @@ function App() {
           </div>
         </div>
         
-        <CreatedReportsStrip
-          pdfs={pdfs}
-          onRefresh={loadPdfs}
-          isLoading={isLoadingPdfs}
-        />
+        <div className="hidden md:block">
+          <CreatedReportsStrip
+            pdfs={pdfs}
+            onRefresh={loadPdfs}
+            isLoading={isLoadingPdfs}
+          />
+        </div>
+
+        <div className="md:hidden flex-1 overflow-hidden">
+          {mobileTab === 'data' && (
+            <WalkDataPanel
+              files={files}
+              selectedFiles={selectedFiles}
+              onSelectFile={handleSelectFile}
+              onAddToBuilder={(file) => {
+                handleAddToBuilder(file);
+                setMobileTab('builder');
+              }}
+              onPreviewFile={setPreviewFile}
+              onUpload={handleUpload}
+              onRefresh={loadFiles}
+              isLoading={isLoadingFiles}
+              isMobile={true}
+            />
+          )}
+          
+          {mobileTab === 'builder' && (
+            <ReportBuilderPanel
+              pages={reportPages}
+              onRemovePage={handleRemovePage}
+              onReorderPages={handleReorderPages}
+              onClear={handleClearBuilder}
+              onGenerate={handleGeneratePDF}
+              isGenerating={isGenerating}
+              generateProgress={generateProgress}
+              onDrop={handleDrop}
+              isMobile={true}
+            />
+          )}
+          
+          {mobileTab === 'reports' && (
+            <CreatedReportsStrip
+              pdfs={pdfs}
+              onRefresh={loadPdfs}
+              isLoading={isLoadingPdfs}
+              isMobile={true}
+            />
+          )}
+        </div>
       </div>
+      
+      <MobileNav
+        activeTab={mobileTab}
+        onTabChange={setMobileTab}
+        reportPagesCount={reportPages.length}
+        pdfsCount={pdfs.length}
+      />
       
       <ImagePreviewModal
         file={previewFile}
         onClose={() => setPreviewFile(null)}
-        onAddToBuilder={handleAddToBuilder}
+        onAddToBuilder={(file) => {
+          handleAddToBuilder(file);
+          setMobileTab('builder');
+        }}
       />
     </AppShell>
   );

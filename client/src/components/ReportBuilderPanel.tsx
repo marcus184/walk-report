@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import type { ReportPage, ReportMeta } from '../types';
-import { Trash2, FileText, GripVertical, MessageSquare, X, Sparkles } from 'lucide-react';
+import { Trash2, FileText, GripVertical, MessageSquare, X, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface ReportBuilderPanelProps {
   pages: ReportPage[];
@@ -11,6 +11,7 @@ interface ReportBuilderPanelProps {
   isGenerating: boolean;
   generateProgress: number;
   onDrop: (e: React.DragEvent) => void;
+  isMobile?: boolean;
 }
 
 export function ReportBuilderPanel({
@@ -21,6 +22,7 @@ export function ReportBuilderPanel({
   isGenerating,
   generateProgress,
   onDrop,
+  isMobile = false,
 }: ReportBuilderPanelProps) {
   const [meta, setMeta] = useState<ReportMeta>({
     title: '',
@@ -31,6 +33,7 @@ export function ReportBuilderPanel({
   });
 
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+  const [showMetaForm, setShowMetaForm] = useState(!isMobile);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -54,36 +57,38 @@ export function ReportBuilderPanel({
           <div>
             <h2 className="text-lg font-semibold text-wac-text">Report Builder</h2>
             <p className="text-xs text-wac-textDim">
-              Drag images from Walk Data or click to add. Arrange, annotate, and generate.
+              {isMobile ? 'Tap images to add from Walk Data' : 'Drag images from Walk Data or click to add. Arrange, annotate, and generate.'}
             </p>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={onClear}
-              disabled={pages.length === 0 || isGenerating}
-              className="btn-ghost text-sm flex items-center gap-1.5"
-            >
-              <Trash2 className="w-4 h-4" />
-              Clear
-            </button>
-            <button
-              onClick={onGenerate}
-              disabled={pages.length === 0 || isGenerating}
-              className="btn-primary text-sm flex items-center gap-1.5"
-            >
-              {isGenerating ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-wac-bg border-t-transparent rounded-full animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FileText className="w-4 h-4" />
-                  Generate Report
-                </>
-              )}
-            </button>
-          </div>
+          {!isMobile && (
+            <div className="flex gap-2">
+              <button
+                onClick={onClear}
+                disabled={pages.length === 0 || isGenerating}
+                className="btn-ghost text-sm flex items-center gap-1.5"
+              >
+                <Trash2 className="w-4 h-4" />
+                Clear
+              </button>
+              <button
+                onClick={onGenerate}
+                disabled={pages.length === 0 || isGenerating}
+                className="btn-primary text-sm flex items-center gap-1.5"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-wac-bg border-t-transparent rounded-full animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <FileText className="w-4 h-4" />
+                    Generate Report
+                  </>
+                )}
+              </button>
+            </div>
+          )}
         </div>
         
         {isGenerating && (
@@ -107,7 +112,7 @@ export function ReportBuilderPanel({
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDropZone}
-          className={`min-h-[300px] rounded-xl border-2 border-dashed transition-all duration-200 ${
+          className={`min-h-[200px] md:min-h-[300px] rounded-xl border-2 border-dashed transition-all duration-200 ${
             pages.length === 0
               ? 'border-wac-border bg-wac-surface/20 flex items-center justify-center'
               : 'border-transparent'
@@ -118,47 +123,88 @@ export function ReportBuilderPanel({
               <div className="w-20 h-20 mx-auto mb-4 rounded-xl bg-wac-surface border border-wac-border flex items-center justify-center">
                 <FileText className="w-10 h-10 text-wac-textDim" />
               </div>
-              <p className="text-wac-text font-medium mb-1">Drop images here</p>
-              <p className="text-sm text-wac-textDim">Start composing your report</p>
+              <p className="text-wac-text font-medium mb-1">
+                {isMobile ? 'No images selected' : 'Drop images here'}
+              </p>
+              <p className="text-sm text-wac-textDim">
+                {isMobile ? 'Go to Walk Data and tap Add on images' : 'Start composing your report'}
+              </p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <div className={isMobile 
+              ? 'space-y-3' 
+              : 'grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3'
+            }>
               {pages.map((page, index) => (
                 <div
                   key={page.id}
-                  className="group relative rounded-xl overflow-hidden bg-wac-card border border-wac-border hover:border-wac-accent/50 transition-all"
+                  className={`group relative rounded-xl overflow-hidden bg-wac-card border border-wac-border hover:border-wac-accent/50 transition-all ${
+                    isMobile ? 'flex items-center gap-3 p-2' : ''
+                  }`}
                 >
-                  <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-                    <span className="w-6 h-6 rounded-full bg-wac-accent text-wac-bg text-xs font-bold flex items-center justify-center">
-                      {index + 1}
-                    </span>
-                    <button className="opacity-0 group-hover:opacity-100 p-1 rounded bg-wac-surface/80 text-wac-textMuted hover:text-wac-text transition-all">
-                      <GripVertical className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  <button
-                    onClick={() => onRemovePage(page.id)}
-                    className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-all"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                  
-                  <div className="aspect-[4/3]">
-                    <img
-                      src={page.file.url}
-                      alt={page.file.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  
-                  <div className="p-2 border-t border-wac-border">
-                    <p className="text-xs text-wac-textMuted truncate mb-1">{page.file.name}</p>
-                    <button className="flex items-center gap-1 text-[10px] text-wac-textDim hover:text-wac-accent transition-colors">
-                      <MessageSquare className="w-3 h-3" />
-                      Add note
-                    </button>
-                  </div>
+                  {isMobile ? (
+                    <>
+                      <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-wac-surface">
+                        <img
+                          src={page.file.url}
+                          alt={page.file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="w-6 h-6 rounded-full bg-wac-accent text-wac-bg text-xs font-bold flex items-center justify-center flex-shrink-0">
+                            {index + 1}
+                          </span>
+                          <p className="text-sm text-wac-text truncate">{page.file.name}</p>
+                        </div>
+                        <button className="flex items-center gap-1 text-xs text-wac-textDim">
+                          <MessageSquare className="w-3 h-3" />
+                          Add note
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => onRemovePage(page.id)}
+                        className="p-2 rounded-full text-wac-textMuted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                        <span className="w-6 h-6 rounded-full bg-wac-accent text-wac-bg text-xs font-bold flex items-center justify-center">
+                          {index + 1}
+                        </span>
+                        <button className="opacity-0 group-hover:opacity-100 p-1 rounded bg-wac-surface/80 text-wac-textMuted hover:text-wac-text transition-all">
+                          <GripVertical className="w-4 h-4" />
+                        </button>
+                      </div>
+                      
+                      <button
+                        onClick={() => onRemovePage(page.id)}
+                        className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 p-1.5 rounded-full bg-red-500/80 text-white hover:bg-red-500 transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                      
+                      <div className="aspect-[4/3]">
+                        <img
+                          src={page.file.url}
+                          alt={page.file.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      
+                      <div className="p-2 border-t border-wac-border">
+                        <p className="text-xs text-wac-textMuted truncate mb-1">{page.file.name}</p>
+                        <button className="flex items-center gap-1 text-[10px] text-wac-textDim hover:text-wac-accent transition-colors">
+                          <MessageSquare className="w-3 h-3" />
+                          Add note
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
@@ -166,58 +212,102 @@ export function ReportBuilderPanel({
         </div>
       </div>
       
-      <div className="flex-shrink-0 p-4 border-t border-wac-border bg-wac-surface/30">
-        <div className="flex items-start gap-3 mb-3">
-          <Sparkles className="w-4 h-4 text-wac-accent mt-0.5" />
-          <p className="text-xs text-wac-textDim">
-            WAC will generate a summary based on the selected images.
-          </p>
-        </div>
+      <div className="flex-shrink-0 border-t border-wac-border bg-wac-surface/30">
+        {isMobile && (
+          <button
+            onClick={() => setShowMetaForm(!showMetaForm)}
+            className="w-full flex items-center justify-between p-4 text-sm text-wac-textMuted"
+          >
+            <span>Report Details</span>
+            {showMetaForm ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+        )}
         
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-xs text-wac-textMuted mb-1">Report Title</label>
-            <input
-              type="text"
-              value={meta.title}
-              onChange={(e) => setMeta({ ...meta, title: e.target.value })}
-              placeholder="Walk Report - Site A"
-              className="w-full input-field text-sm"
-            />
+        {showMetaForm && (
+          <div className="p-4 pt-0 md:pt-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <Sparkles className="w-4 h-4 text-wac-accent mt-0.5" />
+              <p className="text-xs text-wac-textDim">
+                WAC will generate a summary based on the selected images.
+              </p>
+            </div>
+            
+            <div className={isMobile ? 'space-y-3' : 'grid grid-cols-2 gap-3'}>
+              <div>
+                <label className="block text-xs text-wac-textMuted mb-1">Report Title</label>
+                <input
+                  type="text"
+                  value={meta.title}
+                  onChange={(e) => setMeta({ ...meta, title: e.target.value })}
+                  placeholder="Walk Report - Site A"
+                  className="w-full input-field text-sm py-3"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-wac-textMuted mb-1">Location</label>
+                <input
+                  type="text"
+                  value={meta.location}
+                  onChange={(e) => setMeta({ ...meta, location: e.target.value })}
+                  placeholder="Building 1, Floor 3"
+                  className="w-full input-field text-sm py-3"
+                />
+              </div>
+              <div>
+                <label className="block text-xs text-wac-textMuted mb-1">Template</label>
+                <select
+                  value={meta.templateType}
+                  onChange={(e) => setMeta({ ...meta, templateType: e.target.value as ReportMeta['templateType'] })}
+                  className="w-full input-field text-sm py-3"
+                >
+                  <option value="standard">Standard Walk</option>
+                  <option value="punchlist">Punchlist</option>
+                  <option value="safety-audit">Safety Audit</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs text-wac-textMuted mb-1">Crew Names</label>
+                <input
+                  type="text"
+                  value={meta.crewNames}
+                  onChange={(e) => setMeta({ ...meta, crewNames: e.target.value })}
+                  placeholder="John, Sarah"
+                  className="w-full input-field text-sm py-3"
+                />
+              </div>
+            </div>
           </div>
-          <div>
-            <label className="block text-xs text-wac-textMuted mb-1">Location</label>
-            <input
-              type="text"
-              value={meta.location}
-              onChange={(e) => setMeta({ ...meta, location: e.target.value })}
-              placeholder="Building 1, Floor 3"
-              className="w-full input-field text-sm"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-wac-textMuted mb-1">Template</label>
-            <select
-              value={meta.templateType}
-              onChange={(e) => setMeta({ ...meta, templateType: e.target.value as ReportMeta['templateType'] })}
-              className="w-full input-field text-sm"
+        )}
+        
+        {isMobile && (
+          <div className="p-4 pt-0 flex gap-2">
+            <button
+              onClick={onClear}
+              disabled={pages.length === 0 || isGenerating}
+              className="btn-ghost text-sm flex-1 flex items-center justify-center gap-1.5 py-3"
             >
-              <option value="standard">Standard Walk</option>
-              <option value="punchlist">Punchlist</option>
-              <option value="safety-audit">Safety Audit</option>
-            </select>
+              <Trash2 className="w-4 h-4" />
+              Clear
+            </button>
+            <button
+              onClick={onGenerate}
+              disabled={pages.length === 0 || isGenerating}
+              className="btn-primary text-sm flex-[2] flex items-center justify-center gap-1.5 py-3"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-wac-bg border-t-transparent rounded-full animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileText className="w-4 h-4" />
+                  Generate Report
+                </>
+              )}
+            </button>
           </div>
-          <div>
-            <label className="block text-xs text-wac-textMuted mb-1">Crew Names</label>
-            <input
-              type="text"
-              value={meta.crewNames}
-              onChange={(e) => setMeta({ ...meta, crewNames: e.target.value })}
-              placeholder="John, Sarah"
-              className="w-full input-field text-sm"
-            />
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
