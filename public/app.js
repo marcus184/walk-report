@@ -251,17 +251,6 @@ async function handleFileUpload(event) {
     uploadBtn.disabled = false;
     uploadBtn.textContent = originalText;
     
-    // Show feedback
-    if (successCount > 0) {
-        if (errorCount > 0) {
-            alert(`Uploaded ${successCount} file(s) successfully. ${errorCount} file(s) failed.`);
-        } else {
-            alert(`Successfully uploaded ${successCount} file(s)!`);
-        }
-    } else {
-        alert('Failed to upload files. Please try again.');
-    }
-    
     // Refresh file list
     await loadFiles();
 }
@@ -419,7 +408,6 @@ async function generatePDF() {
         
         if (response.ok) {
             const result = await response.json();
-            alert(`PDF generated successfully with ${selectedImages.length} image(s)!`);
             // Refresh PDF list
             await loadPDFs();
         } else {
@@ -428,8 +416,6 @@ async function generatePDF() {
         }
     } catch (error) {
         console.error('Error generating PDF:', error);
-        const errorMessage = error.message || 'Unknown error occurred';
-        alert(`Error generating PDF: ${errorMessage}. Please check the console for details.`);
     } finally {
         btn.disabled = false;
         btn.textContent = 'Generate PDF';
