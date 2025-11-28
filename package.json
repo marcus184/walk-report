@@ -1,15 +1,18 @@
 {
   "name": "walk-report",
   "version": "1.0.0",
-  "description": "Web app to manage files from Raspberry Pi and create PDFs",
+  "description": "WAC - Walk Console for field intelligence reports",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "node server.js & cd client && npm run dev",
+    "server": "node server.js",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm run build"
   },
   "keywords": [
-    "raspberry-pi",
-    "file-manager",
+    "walk-report",
+    "field-intelligence",
     "pdf-generator"
   ],
   "author": "",
@@ -23,4 +26,3 @@
     "nodemon": "^3.0.1"
   }
 }
-

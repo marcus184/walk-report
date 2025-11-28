@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: 'Inter', system-ui, sans-serif;
+    line-height: 1.4;
+    font-weight: 400;
+    color-scheme: dark;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    background-color: #020617;
+    color: #f8fafc;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #0b1120;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #334155;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-wac-accent text-wac-bg font-semibold px-4 py-2 rounded-lg 
+           hover:bg-wac-accentHover transition-all duration-200
+           shadow-glow-sm hover:shadow-glow;
+  }
+  
+  .btn-ghost {
+    @apply bg-transparent text-wac-textMuted border border-wac-border 
+           px-4 py-2 rounded-lg hover:border-wac-accent hover:text-wac-accent
+           transition-all duration-200;
+  }
+  
+  .btn-icon {
+    @apply p-2 rounded-lg text-wac-textMuted hover:text-wac-accent 
+           hover:bg-wac-surface transition-all duration-200;
+  }
+  
+  .card {
+    @apply bg-wac-card border border-wac-border rounded-xl shadow-card;
+  }
+  
+  .input-field {
+    @apply bg-wac-surface border border-wac-border rounded-lg px-3 py-2 
+           text-wac-text placeholder:text-wac-textDim
+           focus:outline-none focus:border-wac-accent focus:ring-1 focus:ring-wac-accent/30
+           transition-all duration-200;
+  }
+}
