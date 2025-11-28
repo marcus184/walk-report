@@ -12,13 +12,11 @@ export function AppShell({ children }: AppShellProps) {
         <div className="h-full px-6 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-wac-accent flex items-center justify-center">
-                <span className="text-wac-bg font-bold text-sm">W</span>
-              </div>
-              <div>
-                <h1 className="text-lg font-semibold text-wac-text leading-tight">Walk Console</h1>
-                <p className="text-xs text-wac-textDim">Clip your physical world into AI-ready reports</p>
-              </div>
+              <img 
+                src="/wac-logo.png" 
+                alt="WAC Logo" 
+                className="h-10 w-auto object-contain"
+              />
             </div>
           </div>
           
