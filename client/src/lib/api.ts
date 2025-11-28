@@ -1,6 +1,7 @@
 import type { WalkFile, PDFFile } from '../types';
 
-const API_BASE = '';
+// Use environment variable if provided, otherwise use relative paths (for Vite proxy)
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export async function fetchFiles(): Promise<WalkFile[]> {
   const response = await fetch(`${API_BASE}/api/files`);
