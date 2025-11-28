@@ -31,28 +31,28 @@ waitForPort = 5000
 
 [[ports]]
 localPort = 3001
-externalPort = 3001
 
 [[ports]]
 localPort = 5000
-externalPort = 80
 
 [[ports]]
 localPort = 5002
-externalPort = 5000
 
 [[ports]]
 localPort = 32897
-externalPort = 3003
 
 [[ports]]
 localPort = 35535
-externalPort = 3000
 
 [[ports]]
 localPort = 45339
-externalPort = 3002
 
 [deployment]
 deploymentTarget = "autoscale"
 run = ["npm", "start"]
+
+[userenv]
+
+[userenv.shared]
+PORT = "5001"
+API_URL = "http://localhost:5001"
