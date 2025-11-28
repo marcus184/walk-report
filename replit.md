@@ -17,15 +17,16 @@ WAC (Wearable Augmented Capture) is a professional operations console for managi
 - **Icons**: Lucide React
 
 ### Port Configuration
-| Port | Server | Purpose |
-|------|--------|---------|
-| 5000 | Vite (React frontend) | User-facing web interface, proxies API requests |
-| 5001 | Express (Node.js backend) | REST API for uploads, files, and PDFs |
+| Port | Server | Purpose | Visible To |
+|------|--------|---------|------------|
+| 5000 | Vite (React frontend) | User-facing web interface | Replit webview (public URL) |
+| 5001 | Express (Node.js backend) | REST API for uploads, files, PDFs | Internal only, proxied via Vite |
 
 **How it works:**
-- Users access the app via port 5000 (the Vite dev server)
+- **Users access the app via port 5000** - This is what Replit's webview shows
+- The public URL (e.g., `https://your-repl.repl.co`) maps to port 5000
 - Vite automatically proxies `/api/*`, `/uploads/*`, and `/pdfs/*` requests to port 5001
-- WAC devices can upload directly to port 5001 or use the proxied endpoint
+- WAC devices upload to the public URL which gets proxied to the backend
 
 ### Directory Structure
 ```
@@ -92,10 +93,10 @@ walk-report/
 
 ### Using curl (Command Line)
 ```bash
-# Upload single file
+# Upload single file to Replit deployment
 curl -X POST -F "file=@/path/to/image.jpg" https://YOUR-REPL-URL/api/upload
 
-# Example with local development
+# Example with local development (Mac)
 curl -X POST -F "file=@./capture.jpg" http://localhost:5001/api/upload
 ```
 
@@ -107,12 +108,68 @@ python3 upload-example.py /home/pi/image.jpg https://YOUR-REPL-URL
 # Upload all images in a directory
 python3 upload-example.py /home/pi/captures/ https://YOUR-REPL-URL
 
-# Local development
+# Local development (Mac)
 python3 upload-example.py ./image.jpg http://localhost:5001
 ```
 
 ### Supported Image Formats
 JPG, JPEG, PNG, GIF, BMP, WEBP (max 50MB per file)
+
+## Raspberry Pi Upload Plan
+
+### Overview
+The WAC device (Raspberry Pi) can upload images to the WAC Console over WiFi. The Pi captures images and sends them to the server's `/api/upload` endpoint.
+
+### Setup Steps
+
+1. **Get Your Replit URL**
+   - Click the "Open in new tab" button in the webview
+   - Copy the URL (e.g., `https://walk-report-username.replit.app`)
+
+2. **Install Python requests on Pi**
+   ```bash
+   pip3 install requests
+   ```
+
+3. **Copy the upload script to your Pi**
+   ```bash
+   scp upload-example.py pi@raspberrypi.local:/home/pi/
+   ```
+
+4. **Test upload from Pi**
+   ```bash
+   python3 upload-example.py /home/pi/test-image.jpg https://YOUR-REPL-URL
+   ```
+
+### Automated Upload (Cron Job)
+To upload all new images every 5 minutes:
+
+```bash
+# Edit crontab
+crontab -e
+
+# Add this line (uploads all images from captures folder)
+*/5 * * * * python3 /home/pi/upload-example.py /home/pi/captures/ https://YOUR-REPL-URL >> /home/pi/upload.log 2>&1
+```
+
+### Triggered Upload (On Capture)
+For immediate upload after capture, add to your capture script:
+
+```python
+import subprocess
+
+# After capturing image
+subprocess.run([
+    'python3', '/home/pi/upload-example.py',
+    '/home/pi/latest-capture.jpg',
+    'https://YOUR-REPL-URL'
+])
+```
+
+### Network Requirements
+- Pi must be connected to WiFi
+- Pi must have internet access to reach Replit URL
+- No special ports needed - uses standard HTTPS (port 443)
 
 ## Recent Changes
 
